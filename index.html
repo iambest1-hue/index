@@ -1,163 +1,316 @@
-<!DOCTYPE html>
-<html lang="zh">
+<!doctype html>
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的网址导航</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f7fa;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background: #4a90e2;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-        #search {
-            width: 90%;
-            padding: 10px;
-            margin: 10px auto;
-            display: block;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-        .category {
-            background: white;
-            margin: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .category-title {
-            padding: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            background: #f0f0f0;
-            border-bottom: 1px solid #ddd;
-        }
-        .links {
-            display: flex;
-            flex-wrap: wrap;
-            padding: 10px;
-        }
-        .link-card {
-            width: calc(50% - 10px);
-            margin: 5px;
-            background: #fff;
-            border: 1px solid #eee;
-            border-radius: 6px;
-            padding: 10px;
-            text-align: center;
-            transition: 0.3s;
-        }
-        .link-card:hover {
-            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-        }
-        @media (min-width: 600px) {
-            .link-card { width: calc(25% - 10px); }
-        }
-        .add-btn {
-            background: #4a90e2;
-            color: white;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            margin: 10px;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>我的网址导航收藏</title>
+  <meta name="description" content="简洁现代风的网址导航收藏站 - 单文件静态实现（可部署到 Gitee Pages）" />
+  <style>
+    /* === style.css (简洁现代风) === */
+    :root{
+      --bg:#0f1724; --card:#0b1220; --muted:#94a3b8; --accent:#06b6d4; --glass: rgba(255,255,255,0.03);
+      --radius:12px; --gap:12px; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071027 0%, #071926 100%);color:#e6eef8}
+    .wrap{max-width:1100px;margin:28px auto;padding:20px}
+    header{display:flex;gap:12px;align-items:center}
+    .brand{font-weight:700;font-size:20px;color:var(--accent)}
+    .searchbar{flex:1;display:flex;gap:8px}
+    .searchbar input{flex:1;padding:10px 12px;border-radius:10px;border:none;background:var(--card);color:inherit}
+    .searchbar select{padding:10px;border-radius:10px;border:none;background:var(--glass);color:inherit}
+    .top-actions{display:flex;gap:8px}
+    .btn{background:var(--accent);border:none;padding:8px 12px;border-radius:10px;color:#042028;font-weight:600;cursor:pointer}
+    main{display:grid;grid-template-columns:260px 1fr;gap:18px;margin-top:18px}
+    .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:var(--radius)}
+    .groups{display:flex;flex-direction:column;gap:8px}
+    .group-item{display:flex;align-items:center;gap:8px;padding:8px;border-radius:10px;cursor:pointer}
+    .group-color{width:12px;height:12px;border-radius:3px}
+    .group-meta{flex:1;display:flex;justify-content:space-between;align-items:center}
+    .small{font-size:13px;color:var(--muted)}
+    .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+    .card{background:var(--card);padding:12px;border-radius:12px;display:flex;gap:10px;align-items:center}
+    .favicon{width:36px;height:36px;border-radius:6px;background:#fff3}
+    .card .title{font-weight:600}
+    .card .url{font-size:12px;color:var(--muted)}
+    .card .actions{margin-left:auto;display:flex;gap:8px}
+    .muted{color:var(--muted)}
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    input[type="color"]{padding:0;border:none;background:none;height:36px;width:44px}
+    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:50;}
+    .modal .box{width:560px;max-width:94%;background:linear-gradient(180deg,#061225,#071330);padding:16px;border-radius:12px}
+    label{display:block;font-size:13px;margin-top:8px;color:var(--muted)}
+    input,textarea,select{width:100%;padding:8px;border-radius:8px;border:none;background:#082033;color:inherit}
+    .row{display:flex;gap:8px}
+    .chip{background:var(--glass);padding:6px 8px;border-radius:8px;font-size:13px}
+    @media (max-width:880px){main{grid-template-columns:1fr}header{flex-direction:column;align-items:stretch}}
+  </style>
 </head>
 <body>
+  <div class="wrap">
+    <header>
+      <div class="brand">我的导航收藏</div>
+      <div class="searchbar">
+        <select id="search-engine"></select>
+        <input id="search-input" placeholder="搜索或输入网址，按回车搜索" />
+        <div class="top-actions">
+          <button id="btn-add-group" class="btn">新建分组</button>
+          <button id="btn-import" class="btn">导入</button>
+          <button id="btn-export" class="btn">导出</button>
+        </div>
+      </div>
+    </header>
 
-<header>
-    <h1>我的网址导航</h1>
-    <input type="text" id="search" placeholder="搜索网站...">
-    <button class="add-btn" onclick="addSite()">➕ 添加收藏</button>
-</header>
+    <main>
+      <aside class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div class="small">分组</div>
+          <div class="small">私密锁: <span id="lock-indicator">未锁定</span></div>
+        </div>
+        <div class="groups" id="groups-list"></div>
+        <hr style="border:none;margin:12px 0;border-top:1px solid rgba(255,255,255,0.03)">
+        <div class="small">公开来源（仓库 public_bookmarks.json，可手动更新）</div>
+        <div id="public-list" style="margin-top:8px"></div>
+      </aside>
 
-<div id="container"></div>
+      <section class="panel">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div class="small">当前分组：</div>
+          <div id="current-group-name" style="font-weight:700">(未选择)</div>
+          <div style="margin-left:auto" class="controls">
+            <button id="btn-add-bookmark" class="btn">添加收藏</button>
+            <button id="btn-toggle-lock" class="btn">切换私密锁</button>
+            <button id="btn-generate-json" class="btn">生成公开 JSON</button>
+          </div>
+        </div>
 
-<script>
-let defaultLinks = {
-    "游戏": [
-        { name: "4399小游戏", url: "https://www.4399.com", desc: "小游戏平台" },
-        { name: "Steam", url: "https://store.steampowered.com", desc: "游戏下载平台" }
-    ],
-    "工具": [
-        { name: "百度翻译", url: "https://fanyi.baidu.com", desc: "在线翻译" },
-        { name: "ProcessOn", url: "https://www.processon.com", desc: "在线绘图工具" }
-    ],
-    "视频": [
-        { name: "哔哩哔哩", url: "https://www.bilibili.com", desc: "弹幕视频网" },
-        { name: "优酷", url: "https://www.youku.com", desc: "在线视频平台" }
-    ],
-    "社区": [
-        { name: "知乎", url: "https://www.zhihu.com", desc: "问答社区" },
-        { name: "V2EX", url: "https://www.v2ex.com", desc: "技术社区" }
-    ]
-};
+        <div id="cards" class="cards">
+          <!-- bookmark cards -->
+        </div>
+      </section>
+    </main>
 
-// 读取本地收藏
-let customLinks = JSON.parse(localStorage.getItem("customLinks") || "{}");
+    <footer>
+      本站为静态单页示例。将此文件命名为 <code>index.html</code> 放入 Gitee 仓库并启用 Pages 即可。<br>
+      提示：公开分组可保存到仓库根部的 <code>public_bookmarks.json</code> 文件以便他人查看。
+    </footer>
+  </div>
 
-function render() {
-    let container = document.getElementById("container");
-    container.innerHTML = "";
-    let allLinks = {...defaultLinks, ...customLinks};
+  <!-- Modal templates -->
+  <div id="modal-root"></div>
 
-    for (let category in allLinks) {
-        let catDiv = document.createElement("div");
-        catDiv.className = "category";
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    /* === script.js (核心逻辑) === */
+    (function(){
+      // ---------- 初始默认数据/工具 ----------
+      const DEFAULT_ENGINES = [
+        {name:'Google', url:'https://www.google.com/search?q=%s'},
+        {name:'Bing', url:'https://www.bing.com/search?q=%s'},
+        {name:'DuckDuckGo', url:'https://duckduckgo.com/?q=%s'},
+        {name:'百度', url:'https://www.baidu.com/s?wd=%s'}
+      ];
 
-        let title = document.createElement("div");
-        title.className = "category-title";
-        title.textContent = category;
-        title.onclick = () => linksDiv.style.display = linksDiv.style.display === "none" ? "flex" : "none";
-        catDiv.appendChild(title);
+      const LS_KEY = 'my_nav_data_v1';
+      const LS_LOCK_KEY = 'my_nav_lock_v1';
 
-        let linksDiv = document.createElement("div");
-        linksDiv.className = "links";
-        allLinks[category].forEach(link => {
-            let card = document.createElement("a");
-            card.className = "link-card";
-            card.href = link.url;
-            card.target = "_blank";
-            card.innerHTML = `<strong>${link.name}</strong><br><small>${link.desc}</small>`;
-            linksDiv.appendChild(card);
-        });
-        catDiv.appendChild(linksDiv);
+      // DOM
+      const el = id=>document.getElementById(id);
+      const groupsList = el('groups-list');
+      const cardsRoot = el('cards');
+      const currentGroupName = el('current-group-name');
+      const modalRoot = el('modal-root');
+      const lockIndicator = el('lock-indicator');
 
-        container.appendChild(catDiv);
-    }
-}
+      // state
+      let state = { groups: [], engines: DEFAULT_ENGINES, currentGroupId: null };
+      let locked = false;
 
-function addSite() {
-    let name = prompt("网站名称：");
-    if (!name) return;
-    let url = prompt("网站链接（包含 http/https）：");
-    if (!url) return;
-    let desc = prompt("网站简介：") || "";
-    let category = prompt("所属分类（如 游戏/工具/视频/社区）：") || "其他";
+      // ---------- helpers ----------
+      function uid(prefix='id'){return prefix+Math.random().toString(36).slice(2,9)}
+      function save(){localStorage.setItem(LS_KEY, JSON.stringify(state))}
+      function load(){const s=localStorage.getItem(LS_KEY);if(s){try{state=JSON.parse(s)}catch(e){console.warn(e)}}}
+      function saveLock(){localStorage.setItem(LS_LOCK_KEY, JSON.stringify(locked))}
+      function loadLock(){const s=localStorage.getItem(LS_LOCK_KEY);locked= !!JSON.parse(s||'false'); updateLockUI()}
+      function formatUrl(u){try{const url=new URL(u);return url.href}catch(e){return u}}
+      function faviconFor(url){try{const d=new URL(url).hostname; return 'https://www.google.com/s2/favicons?domain='+d}catch(e){return ''}}
 
-    if (!customLinks[category]) customLinks[category] = [];
-    customLinks[category].push({ name, url, desc });
-    localStorage.setItem("customLinks", JSON.stringify(customLinks));
-    render();
-}
+      // ---------- UI render ----------
+      function renderEngines(){const sel=el('search-engine');sel.innerHTML='';state.engines.forEach((eng,i)=>{const o=document.createElement('option');o.value=i;o.textContent=eng.name;sel.appendChild(o)})}
 
-// 搜索功能
-document.getElementById("search").addEventListener("input", function() {
-    let keyword = this.value.toLowerCase();
-    document.querySelectorAll(".link-card").forEach(card => {
-        card.style.display = card.innerText.toLowerCase().includes(keyword) ? "block" : "none";
-    });
-});
+      function renderGroups(){groupsList.innerHTML='';
+        state.groups.forEach(g=>{
+          const div=document.createElement('div');div.className='group-item';div.dataset.id=g.id;
+          if(g.color) div.style.background = 'linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01))';
+          const color=document.createElement('div');color.className='group-color';color.style.background=g.color||'#06b6d4';
+          const meta=document.createElement('div');meta.className='group-meta';
+          const left=document.createElement('div');left.innerHTML=`<div style="font-weight:700">${g.name}</div><div class="small">${g.public? '公开':'私密'}</div>`;
+          const right=document.createElement('div');
+          const edit=document.createElement('button');edit.className='chip';edit.textContent='编辑';
+          const del=document.createElement('button');del.className='chip';del.textContent='删除';
+          right.appendChild(edit);right.appendChild(del);
+          meta.appendChild(left);meta.appendChild(right);
+          div.appendChild(color);div.appendChild(meta);
 
-render();
-</script>
+          div.addEventListener('click', ()=>{if(locked && !g.public){alert('当前启用私密锁，无法打开私密分组。');return} state.currentGroupId=g.id; renderCurrentGroup(); save()})
+          edit.addEventListener('click', (ev)=>{ev.stopPropagation(); openEditGroupModal(g)});
+          del.addEventListener('click', (ev)=>{ev.stopPropagation(); if(confirm('删除该分组及其收藏？')){state.groups=state.groups.filter(x=>x.id!==g.id); if(state.currentGroupId===g.id) state.currentGroupId=null; renderGroups(); renderCurrentGroup(); save()}})
 
+          groupsList.appendChild(div);
+        })
+      }
+
+      function renderCurrentGroup(){const g = state.groups.find(x=>x.id===state.currentGroupId);
+        currentGroupName.textContent = g? g.name : '(未选择)';
+        cardsRoot.innerHTML='';
+        if(!g) return;
+        (g.items||[]).forEach(item=>{
+          const card=document.createElement('div');card.className='card';
+          const fav=document.createElement('img');fav.className='favicon';fav.src=faviconFor(item.url);
+          const txt=document.createElement('div');txt.style.minWidth='0';
+          txt.innerHTML = `<div class='title'>${item.title}</div><div class='url muted'>${item.url}</div>`;
+          const actions=document.createElement('div');actions.className='actions';
+          const open=document.createElement('button');open.className='chip';open.textContent='打开';
+          const copy=document.createElement('button');copy.className='chip';copy.textContent='复制';
+          const qr=document.createElement('button');qr.className='chip';qr.textContent='二维码';
+          const edit=document.createElement('button');edit.className='chip';edit.textContent='编辑';
+          const del=document.createElement('button');del.className='chip';del.textContent='删';
+          actions.append(open,copy,qr,edit,del);
+          card.appendChild(fav);card.appendChild(txt);card.appendChild(actions);
+
+          open.addEventListener('click', ()=>window.open(item.url,'_blank'));
+          copy.addEventListener('click', ()=>{navigator.clipboard.writeText(item.url).then(()=>alert('已复制'))});
+          qr.addEventListener('click', ()=>openQRModal(item.url));
+          edit.addEventListener('click', ()=>openEditBookmarkModal(item, g));
+          del.addEventListener('click', ()=>{ if(confirm('删除该收藏？')){ g.items = (g.items||[]).filter(x=>x.id!==item.id); renderCurrentGroup(); save() } });
+
+          cardsRoot.appendChild(card);
+        })
+      }
+
+      // ---------- modals ----------
+      function openModal(html){modalRoot.innerHTML = `<div class='modal'><div class='box'>${html}</div></div>`}
+      function closeModal(){modalRoot.innerHTML=''}
+
+      function openNewGroupModal(){
+        openModal(`<div><h3>新建分组</h3>
+          <label>名称</label><input id='g-name' />
+          <label>颜色</label><input id='g-color' type='color' value='#06b6d4' />
+          <label>公开?</label>
+          <select id='g-public'><option value='true'>是（公开）</option><option value='false'>否（私密）</option></select>
+          <div style='margin-top:12px;display:flex;gap:8px;justify-content:flex-end'><button id='g-cancel' class='btn'>取消</button><button id='g-save' class='btn'>保存</button></div></div>`)
+        el('g-cancel').onclick=closeModal; el('g-save').onclick=()=>{
+          const name=el('g-name').value.trim()||'未命名'; const color=el('g-color').value; const pub=el('g-public').value==='true';
+          const g={id:uid('g_'),name, color, public:pub, items:[]}; state.groups.push(g); state.currentGroupId=g.id; renderGroups(); renderCurrentGroup(); save(); closeModal();
+        }
+      }
+
+      function openEditGroupModal(g){
+        openModal(`<div><h3>编辑分组</h3>
+          <label>名称</label><input id='g-name' value='${escapeHtml(g.name)}' />
+          <label>颜色</label><input id='g-color' type='color' value='${g.color||'#06b6d4'}' />
+          <label>公开?</label>
+          <select id='g-public'><option value='true'>是（公开）</option><option value='false'>否（私密）</option></select>
+          <div style='margin-top:12px;display:flex;gap:8px;justify-content:flex-end'><button id='g-cancel' class='btn'>取消</button><button id='g-save' class='btn'>保存</button></div></div>`)
+        el('g-public').value = g.public? 'true':'false'; el('g-cancel').onclick=closeModal; el('g-save').onclick=()=>{
+          g.name = el('g-name').value.trim()||g.name; g.color=el('g-color').value; g.public = el('g-public').value==='true'; renderGroups(); renderCurrentGroup(); save(); closeModal();
+        }
+      }
+
+      function openAddBookmarkModal(){
+        const g = state.groups.find(x=>x.id===state.currentGroupId);
+        if(!g){alert('请先选择或创建一个分组'); return}
+        openModal(`<div><h3>添加收藏到【${escapeHtml(g.name)}】</h3>
+          <label>显示名称</label><input id='b-title' />
+          <label>网址 (含 http/https)</label><input id='b-url' />
+          <div style='margin-top:12px;display:flex;gap:8px;justify-content:flex-end'><button id='b-cancel' class='btn'>取消</button><button id='b-save' class='btn'>保存</button></div></div>`)
+        el('b-cancel').onclick=closeModal; el('b-save').onclick=()=>{
+          const t=el('b-title').value.trim()||el('b-url').value.trim(); const u=el('b-url').value.trim(); if(!u){alert('请输入网址');return}
+          const item={id:uid('b_'), title:t, url:formatUrl(u)}; g.items = g.items||[]; g.items.push(item); renderCurrentGroup(); renderGroups(); save(); closeModal();
+        }
+      }
+
+      function openEditBookmarkModal(item, group){
+        openModal(`<div><h3>编辑收藏</h3>
+          <label>显示名称</label><input id='b-title' value='${escapeHtml(item.title)}' />
+          <label>网址</label><input id='b-url' value='${escapeHtml(item.url)}' />
+          <div style='margin-top:12px;display:flex;gap:8px;justify-content:flex-end'><button id='b-cancel' class='btn'>取消</button><button id='b-save' class='btn'>保存</button></div></div>`)
+        el('b-cancel').onclick=closeModal; el('b-save').onclick=()=>{
+          item.title = el('b-title').value.trim()||item.title; item.url = formatUrl(el('b-url').value.trim()||item.url); renderCurrentGroup(); save(); closeModal();
+        }
+      }
+
+      function openQRModal(url){
+        openModal(`<div><h3>二维码</h3><div id='qrbox' style='padding:12px;background:#071430;border-radius:8px;display:flex;justify-content:center'></div><div style='text-align:right;margin-top:12px'><button id='qr-close' class='btn'>关闭</button></div></div>`);
+        const qroot = document.getElementById('qrbox'); new QRCode(qroot, {text:url, width:180, height:180}); el('qr-close').onclick=closeModal;
+      }
+
+      // ---------- import/export & public json ----------
+      function exportToClipboard(){navigator.clipboard.writeText(JSON.stringify(state, null, 2)).then(()=>alert('已复制全部数据（JSON）'))}
+      function doExportFile(){const dataStr='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(state, null, 2)); const a=document.createElement('a'); a.href=dataStr; a.download='bookmarks_export.json'; a.click();}
+
+      function importFromFile(){
+        const inp=document.createElement('input');inp.type='file';inp.accept='application/json';inp.onchange=()=>{
+          const f=inp.files[0]; const r=new FileReader(); r.onload=()=>{
+            try{ const parsed=JSON.parse(r.result); if(confirm('覆盖当前数据？取消则合并。')){ state=parsed } else { // 合并：把 parsed.groups 加入
+              (parsed.groups||[]).forEach(g=>{g.id = uid('g_'); state.groups.push(g)})
+            } save(); renderGroups(); renderCurrentGroup(); alert('导入完成') }catch(e){alert('JSON 解析失败')} }
+          r.readAsText(f);
+        }; inp.click();
+      }
+
+      async function loadPublicJSON(){
+        try{
+          const res = await fetch('/public_bookmarks.json');
+          if(!res.ok) throw new Error('no file');
+          const data = await res.json(); renderPublic(data);
+        }catch(e){ // fallback to built-in sample
+          const sample = {groups:[{name:'示例公开组', public:true, color:'#06b6d4', items:[{title:'示例站点','url':'https://example.com'}]}]}; renderPublic(sample);
+        }
+      }
+      function renderPublic(data){const out = el('public-list'); out.innerHTML=''; (data.groups||[]).forEach(g=>{
+        const d=document.createElement('div'); d.className='chip'; d.style.display='block'; d.style.marginBottom='6px'; d.textContent = `${g.name} (${(g.items||[]).length} 个)`; d.onclick=()=>{ if(!g.items||!g.items.length) return; state.currentGroupId = (function(){const gid=uid('g_'); state.groups.push({id:gid,name:g.name,public:true,color:g.color,items:(g.items||[]).map(it=>({...it,id:uid('b_')}))}); save(); renderGroups(); return gid})(); renderCurrentGroup(); }
+        out.appendChild(d);
+      }) }
+
+      // ---------- lock ----------
+      function updateLockUI(){ lockIndicator.textContent = locked? '已启用':'未锁定' }
+      function toggleLock(){ locked = !locked; saveLock(); updateLockUI();]
+      }
+
+      // ---------- utility ----------
+      function escapeHtml(s){ return (s+'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[c]) }
+
+      // ---------- events ----------
+      document.getElementById('btn-add-group').addEventListener('click', openNewGroupModal);
+      document.getElementById('btn-add-bookmark').addEventListener('click', openAddBookmarkModal);
+      document.getElementById('btn-import').addEventListener('click', importFromFile);
+      document.getElementById('btn-export').addEventListener('click', doExportFile);
+      document.getElementById('btn-generate-json').addEventListener('click', ()=>{
+        // 生成可放到仓库的公开 JSON（只包含 public=true 的组）
+        const pub = {groups: state.groups.filter(g=>g.public).map(g=>({name:g.name,color:g.color,items:(g.items||[]).map(it=>({title:it.title,url:it.url}) ) })) };
+        navigator.clipboard.writeText(JSON.stringify(pub, null, 2)).then(()=>alert('已复制公开 JSON 到剪贴板，可保存为 public_bookmarks.json 并 push 到仓库'));
+      });
+
+      el('btn-toggle-lock').addEventListener('click', ()=>{
+        if(!locked){ // 设置简单口令
+          const pass = prompt('设置私密口令（将保存在本地） — 若留空，则取消'): null;
+        }
+        // 这里采用轻保护：仅开关 locked 状态
+        locked = !locked; saveLock(); updateLockUI(); renderGroups(); renderCurrentGroup();
+      })
+
+      // search
+      document.getElementById('search-input').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ const q=e.target.value.trim(); if(!q) return; const idx = document.getElementById('search-engine').value; const eng = state.engines[idx]; const url = eng.url.replace('%s', encodeURIComponent(q)); window.open(url,'_blank'); } })
+
+      // init
+      function init(){ load(); loadLock(); if(!state.groups.length){ state.groups=[{id:uid('g_'),name:'常用',color:'#06b6d4',public:false,items:[{id:uid('b_'),title:'示例：Google',url:'https://www.google.com'}]}] }
+        renderEngines(); renderGroups(); renderCurrentGroup(); loadPublicJSON();
+      }
+
+      init();
+    })();
+  </script>
 </body>
 </html>
