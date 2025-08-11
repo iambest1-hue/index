@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的网址导航</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #4a90e2;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        #search {
+            width: 90%;
+            padding: 10px;
+            margin: 10px auto;
+            display: block;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .category {
+            background: white;
+            margin: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .category-title {
+            padding: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #f0f0f0;
+            border-bottom: 1px solid #ddd;
+        }
+        .links {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 10px;
+        }
+        .link-card {
+            width: calc(50% - 10px);
+            margin: 5px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            transition: 0.3s;
+        }
+        .link-card:hover {
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+        @media (min-width: 600px) {
+            .link-card { width: calc(25% - 10px); }
+        }
+        .add-btn {
+            background: #4a90e2;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            margin: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>我的网址导航</h1>
+    <input type="text" id="search" placeholder="搜索网站...">
+    <button class="add-btn" onclick="addSite()">➕ 添加收藏</button>
+</header>
+
+<div id="container"></div>
+
+<script>
+let defaultLinks = {
+    "游戏": [
+        { name: "4399小游戏", url: "https://www.4399.com", desc: "小游戏平台" },
+        { name: "Steam", url: "https://store.steampowered.com", desc: "游戏下载平台" }
+    ],
+    "工具": [
+        { name: "百度翻译", url: "https://fanyi.baidu.com", desc: "在线翻译" },
+        { name: "ProcessOn", url: "https://www.processon.com", desc: "在线绘图工具" }
+    ],
+    "视频": [
+        { name: "哔哩哔哩", url: "https://www.bilibili.com", desc: "弹幕视频网" },
+        { name: "优酷", url: "https://www.youku.com", desc: "在线视频平台" }
+    ],
+    "社区": [
+        { name: "知乎", url: "https://www.zhihu.com", desc: "问答社区" },
+        { name: "V2EX", url: "https://www.v2ex.com", desc: "技术社区" }
+    ]
+};
+
+// 读取本地收藏
+let customLinks = JSON.parse(localStorage.getItem("customLinks") || "{}");
+
+function render() {
+    let container = document.getElementById("container");
+    container.innerHTML = "";
+    let allLinks = {...defaultLinks, ...customLinks};
+
+    for (let category in allLinks) {
+        let catDiv = document.createElement("div");
+        catDiv.className = "category";
+
+        let title = document.createElement("div");
+        title.className = "category-title";
+        title.textContent = category;
+        title.onclick = () => linksDiv.style.display = linksDiv.style.display === "none" ? "flex" : "none";
+        catDiv.appendChild(title);
+
+        let linksDiv = document.createElement("div");
+        linksDiv.className = "links";
+        allLinks[category].forEach(link => {
+            let card = document.createElement("a");
+            card.className = "link-card";
+            card.href = link.url;
+            card.target = "_blank";
+            card.innerHTML = `<strong>${link.name}</strong><br><small>${link.desc}</small>`;
+            linksDiv.appendChild(card);
+        });
+        catDiv.appendChild(linksDiv);
+
+        container.appendChild(catDiv);
+    }
+}
+
+function addSite() {
+    let name = prompt("网站名称：");
+    if (!name) return;
+    let url = prompt("网站链接（包含 http/https）：");
+    if (!url) return;
+    let desc = prompt("网站简介：") || "";
+    let category = prompt("所属分类（如 游戏/工具/视频/社区）：") || "其他";
+
+    if (!customLinks[category]) customLinks[category] = [];
+    customLinks[category].push({ name, url, desc });
+    localStorage.setItem("customLinks", JSON.stringify(customLinks));
+    render();
+}
+
+// 搜索功能
+document.getElementById("search").addEventListener("input", function() {
+    let keyword = this.value.toLowerCase();
+    document.querySelectorAll(".link-card").forEach(card => {
+        card.style.display = card.innerText.toLowerCase().includes(keyword) ? "block" : "none";
+    });
+});
+
+render();
+</script>
+
+</body>
+</html>
